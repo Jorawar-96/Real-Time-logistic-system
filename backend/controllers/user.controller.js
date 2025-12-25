@@ -1,6 +1,7 @@
 const userModel = require('../models/user.model');
 const userService = require('../services/user.service')
 const {validationResult} = require('express-validator');
+const blackListTokenModel = require('../models/blacklist.model')
 
 module.exports.registerUser = async(req,res,next)=>{
     const errors = validationResult(req);
@@ -49,5 +50,39 @@ module.exports.loginUser = async(req,res,next)=>{
 
     const token = user.generateAuthToken();
 
+    res.cookie('token',token);
+
     res.status(200).json({token,user})
+}
+
+module.exports.getUserProfile = async(req,res,next)=>{
+    res.status(200).json(req.user);
+}
+
+module.exports.logoutUser = async (req, res, next) => {
+    try {
+        // Extract token before clearing cookie
+        let token = null;
+
+        if (req.cookies && req.cookies.token) {
+            token = req.cookies.token;
+        } else if (req.headers && req.headers.authorization) {
+            const parts = req.headers.authorization.split(' ');
+            if (parts.length === 2 && /^Bearer$/i.test(parts[0])) {
+                token = parts[1];
+            } else {
+                token = req.headers.authorization;
+            }
+        }
+
+        if (token) {
+            await blackListTokenModel.create({ token });
+        }
+
+        res.clearCookie('token');
+        return res.status(200).json({ message: 'logged out' });
+    } catch (error) {
+        console.log('Logout error:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
 }

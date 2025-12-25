@@ -107,4 +107,46 @@ curl -X POST http://localhost:4000/users/login \
 
 ---
 
+# Users API — /users/profile 🔒
+
+## Endpoint
+**POST** `/users/profile`
+
+## Description
+Return the authenticated user's profile. This endpoint is protected and requires a valid JWT token sent either as a cookie (`token`) or an `Authorization: Bearer <token>` header.
+
+## Request body
+No request body required. The endpoint reads authentication from the cookie or header.
+
+## Responses
+- **200 OK**
+  - Body: the user object returned by the server (same format as used in login/register responses).
+- **401 Unauthorized**
+  - Returned when the token is missing, invalid, blacklisted, or expired.
+- **500 Internal Server Error**
+  - For unexpected server/database errors.
+
+---
+
+# Users API — /users/logout 🔐
+
+## Endpoint
+**POST** `/users/logout`
+
+## Description
+Invalidate the current JWT (adds it to a blacklist) and clear the cookie named `token`. Supports tokens sent via cookie or `Authorization` header. The route is protected (requires an auth token) and also provides a `GET /users/logout` for backward compatibility.
+
+## Request body
+No request body required. Provide the token via cookie or header.
+
+## Responses
+- **200 OK**
+  - Body: `{ message: "logged out" }` — token successfully blacklisted and cookie cleared.
+- **401 Unauthorized**
+  - Returned if the user is not authenticated (missing/invalid token).
+- **500 Internal Server Error**
+  - For unexpected server/database errors.
+
+---
+
 If you want, I can add more endpoints to this `README.md` or convert it into a `docs/` folder with multiple endpoint files. ✅
