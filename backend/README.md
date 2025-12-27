@@ -150,3 +150,73 @@ No request body required. Provide the token via cookie or header.
 ---
 
 If you want, I can add more endpoints to this `README.md` or convert it into a `docs/` folder with multiple endpoint files. ✅
+
+---
+
+# Captains API — /captain/register 🧑‍✈️
+
+## Endpoint
+**POST** `/captain/register`
+
+## Description
+Create a new captain (driver) account and return a JWT authentication token along with the created captain object.
+
+---
+
+## Request body (JSON)
+- **fullname** (object)
+  - `firstname` (string) — required, minimum 3 characters
+  - `lastname` (string) — optional, minimum 3 characters
+- `email` (string) — required, must be a valid email
+- `password` (string) — required, minimum 6 characters
+- `vehicle` (object) — required
+  - `color` (string) — required, minimum 3 characters
+  - `plate` (string) — required, minimum 3 characters
+  - `capacity` (number) — required, minimum 1
+  - `vehicleType` (string) — required; accepted values (case-sensitive): **`Car`**, **`Motorcycle`**, **`Auto`**
+
+Example:
+
+```json
+{
+  "fullname": { "firstname": "Kareem", "lastname": "Ali" },
+  "email": "kareem@example.com",
+  "password": "strongpassword",
+  "vehicle": { "color": "red", "plate": "ABC123", "capacity": 4, "vehicleType": "Car" }
+}
+```
+
+---
+
+## Responses
+- **200 OK**
+  - Body: `{ token: string, captain: object }` — `token` is a JWT used for authentication, `captain` contains the created captain (password should not be returned).
+
+- **400 Bad Request**
+  - Validation errors (express-validator / Mongoose) when required fields are missing or invalid. Response includes an `errors` array or a Mongoose validation error.
+
+- **409 Conflict**
+  - Attempt to register with an email that already exists (duplicate key from MongoDB).
+
+- **500 Internal Server Error**
+  - For unexpected server/database errors.
+
+---
+
+## Notes / Implementation details
+- The route currently validates `vehicle.vehicleType` using express-validator in `routes/captain.routes.js` with the values `['Car','Motorcycle','Auto']` (case-sensitive). Sending lowercase values like `"car"` will fail Mongoose enum validation unless inputs are normalized.
+- The controller should return **both** the generated JWT and the created captain object (without password). Currently `captain.controller.js` creates the token but responds with `res.status(200).json({ token: captain })` which looks like a bug — it should be `res.status(200).json({ token, captain })`.
+- The server expects the `JWT_SECRET_KEY` environment variable to be set (used to sign JWTs). If missing, token creation will throw: `secretOrPrivateKey must have a value`.
+- Passwords are hashed before saving using the model's `hashpassword` helper.
+
+---
+
+## Quick curl example
+```bash
+curl -X POST http://localhost:4000/captain/register \
+  -H "Content-Type: application/json" \
+  -d '{"fullname":{"firstname":"Kareem","lastname":"Ali"},"email":"kareem@example.com","password":"strongpassword","vehicle":{"color":"red","plate":"ABC123","capacity":4,"vehicleType":"Car"}}'
+```
+
+---
+
