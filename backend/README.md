@@ -153,61 +153,141 @@ If you want, I can add more endpoints to this `README.md` or convert it into a `
 
 ---
 
-# Captains API — /captain/register 🧑‍✈️
+# Captains API — /captain 🧑‍✈️
 
-## Endpoint
-**POST** `/captain/register`
-
-## Description
-Create a new captain (driver) account and return a JWT authentication token along with the created captain object.
+## Overview
+Create and authenticate captains (drivers). All endpoints return JSON and protected routes require a valid JWT token sent as an `Authorization: Bearer <token>` header or a cookie named `token`.
 
 ---
 
-## Request body (JSON)
-- **fullname** (object)
-  - `firstname` (string) — required, minimum 3 characters
-  - `lastname` (string) — optional, minimum 3 characters
-- `email` (string) — required, must be a valid email
-- `password` (string) — required, minimum 6 characters
-- `vehicle` (object) — required
-  - `color` (string) — required, minimum 3 characters
-  - `plate` (string) — required, minimum 3 characters
-  - `capacity` (number) — required, minimum 1
-  - `vehicleType` (string) — required; accepted values (case-sensitive): **`Car`**, **`Motorcycle`**, **`Auto`**
+### POST /captain/register
+Create a new captain and return a JWT plus the created captain object (password not returned).
 
-Example:
+Request body (JSON):
+
+```jsonc
+{
+  "fullname": {
+    "firstname": "Kareem", // required, string, min 3 chars
+    "lastname": "Ali"      // optional, string, min 3 chars if provided
+  },
+  "email": "kareem@example.com", // required, must be a valid email, unique
+  "password": "strongpassword",  // required, min 6 chars
+  "vehicle": {
+    "color": "red",        // required, string, min 3 chars
+    "plate": "ABC123",     // required, string, min 3 chars
+    "capacity": 4,           // required, integer >= 1
+    "vehicleType": "Car"   // required, case-sensitive
+                             // routes validator accepts: 'Car', 'Motorcycle', 'Auto'
+                             // NOTE: model enum is ['Motorcycle','Car','autoRickshaw'] -> potential mismatch with 'Auto'
+  }
+}
+```
+
+Success response (201 Created):
+
+```jsonc
+{
+  "token": "eyJhbGciOi...", // JWT used for authentication (also set as httpOnly cookie 'token')
+  "captain": {
+    "_id": "644...",
+    "fullname": { "firstname": "Kareem", "lastname": "Ali" },
+    "email": "kareem@example.com",
+    "vehicle": { "color": "red", "plate": "ABC123", "capacity": 4, "vehicleType": "Car" },
+    "status": "inactive" // default
+  }
+}
+```
+
+Validation error example (400 Bad Request):
 
 ```json
 {
-  "fullname": { "firstname": "Kareem", "lastname": "Ali" },
-  "email": "kareem@example.com",
-  "password": "strongpassword",
-  "vehicle": { "color": "red", "plate": "ABC123", "capacity": 4, "vehicleType": "Car" }
+  "errors": [
+    { "msg": "Invalid Email", "param": "email", "location": "body" },
+    { "msg": "Password must be at least 6 characters long", "param": "password", "location": "body" }
+  ]
 }
+```
+
+Duplicate email example (409 Conflict):
+
+```json
+{ "message": "Captain already Exist" }
 ```
 
 ---
 
-## Responses
-- **200 OK**
-  - Body: `{ token: string, captain: object }` — `token` is a JWT used for authentication, `captain` contains the created captain (password should not be returned).
+### POST /captain/login
+Authenticate and return a JWT and the captain object (password not returned). The server also sets an httpOnly cookie named `token`.
 
-- **400 Bad Request**
-  - Validation errors (express-validator / Mongoose) when required fields are missing or invalid. Response includes an `errors` array or a Mongoose validation error.
+Request body (JSON):
 
-- **409 Conflict**
-  - Attempt to register with an email that already exists (duplicate key from MongoDB).
+```jsonc
+{
+  "email": "kareem@example.com", // required
+  "password": "strongpassword"   // required
+}
+```
 
-- **500 Internal Server Error**
-  - For unexpected server/database errors.
+Success response (200 OK):
+
+```jsonc
+{
+  "token": "eyJhbGciOi...",
+  "captain": {
+    "_id": "644...",
+    "fullname": { "firstname": "Kareem", "lastname": "Ali" },
+    "email": "kareem@example.com",
+    "vehicle": { "color": "red", "plate": "ABC123", "capacity": 4, "vehicleType": "Car" },
+    "status": "active"
+  }
+}
+```
+
+Unauthorized example (401):
+
+```json
+{ "message": "Invalid email or password" }
+```
 
 ---
 
-## Notes / Implementation details
-- The route currently validates `vehicle.vehicleType` using express-validator in `routes/captain.routes.js` with the values `['Car','Motorcycle','Auto']` (case-sensitive). Sending lowercase values like `"car"` will fail Mongoose enum validation unless inputs are normalized.
-- The controller should return **both** the generated JWT and the created captain object (without password). Currently `captain.controller.js` creates the token but responds with `res.status(200).json({ token: captain })` which looks like a bug — it should be `res.status(200).json({ token, captain })`.
-- The server expects the `JWT_SECRET_KEY` environment variable to be set (used to sign JWTs). If missing, token creation will throw: `secretOrPrivateKey must have a value`.
-- Passwords are hashed before saving using the model's `hashpassword` helper.
+### POST /captain/profile 🔒
+Protected — returns the authenticated captain's profile.
+
+Request body: none (token via cookie or Authorization header)
+
+Success response (200 OK):
+
+```json
+{ "captain": { /* full captain object as returned in login/register */ } }
+```
+
+Unauthorized example (401):
+
+```json
+{ "message": "Unauthorized" }
+```
+
+---
+
+### GET /captain/logout or POST /captain/logout 🔐
+Invalidate the current JWT (added to a blacklist) and clear cookie `token`.
+
+Success response (200 OK):
+
+```json
+{ "message": "Logout successfully" }
+```
+
+---
+
+## Notes / Implementation details ⚠️
+- The route validator (`routes/captain.routes.js`) currently accepts `vehicle.vehicleType` values `['Car','Motorcycle','Auto']` (case-sensitive). The Mongoose schema enum is `['Motorcycle','Car','autoRickshaw']`. This mismatch may cause valid inputs (e.g., `"Auto"`) to fail at the model layer unless inputs are normalized or the schema is adjusted.
+- The controller must return both the generated JWT and the created captain object (without password). Ensure the response shape is `{ token, captain }`.
+- `JWT_SECRET_KEY` environment variable is required to sign tokens.
+- Passwords are hashed using `captainModel.hashpassword` before saving.
 
 ---
 

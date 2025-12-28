@@ -1,7 +1,7 @@
 const userModel = require('../models/user.model')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
+const BlacklistSchema = require('../models/blacklist.model')
 
 module.exports.authUser = async (req, res, next) => {
     try {
@@ -19,7 +19,7 @@ module.exports.authUser = async (req, res, next) => {
                 token = req.headers.authorization;
             }
         }
-        const isBlacklisted = await userModel.findOne({token:token});
+        const isBlacklisted = await BlacklistSchema.findOne({token:token});
         if(isBlacklisted){
             return res.status(401).json({message:'Unathorized'})
         }
@@ -42,6 +42,34 @@ module.exports.authUser = async (req, res, next) => {
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({ message: 'Token expired' });
         }
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+}
+
+module.exports.authCaptain = async (req,res,next) =>{
+    let token = null;
+    if(req.cookies && req.cookies.token){
+        token = req.cookies.token;
+    } else if(req.headers && req.headers.authorization){
+        token = req.headers.authorization.split(' ')[1];
+    }   
+    
+    if(!token){
+        return res.status(401).json({message:'Unauthorized'})
+    }
+    const isBlacklisted = await BlacklistSchema.findOne({token:token});
+    if(isBlacklisted){
+        return res.status(401).json({message:'Unathorized'})
+    }
+    try {
+        const decoded = jwt.verify(token,process.env.JWT_SECRET_KEY);
+        req.captainId = decoded._id;
+        next();
+    } catch (error) {
+        console.log('Auth middleware error:', error);
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: 'Token expired' });
+        }  
         return res.status(401).json({ message: 'Unauthorized' });
     }
 }
