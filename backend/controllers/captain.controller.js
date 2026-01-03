@@ -67,8 +67,15 @@ module.exports.loginCaptain = async(req,res,next)=>{
 }
 
 module.exports.getCaptainProfile = async(req,res,next)=>{
-    
-    res.status(200).json({captain:req.captain});
+    try {
+        const captain = await captainModel.findById(req.captainId).select('-password');
+        if (!captain) {
+            return res.status(404).json({ message: 'Captain not found' });
+        }
+        res.status(200).json({ captain });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
 }
 
 module.exports.logoutCaptain = async(req,res,next)=> {
