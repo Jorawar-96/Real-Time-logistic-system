@@ -17,6 +17,9 @@ router.post('/login',[
     body('password').isLength({min:6}).withMessage('password is incorrect')
 ],userControllers.loginUser)
 
+
+// Support GET /profile for compatibility with frontend
+router.get('/profile', authMiddleware.authUser, userControllers.getUserProfile);
 router.post('/profile',authMiddleware.authUser,userControllers.getUserProfile)
 
 router.post('/logout', authMiddleware.authUser, userControllers.logoutUser);
