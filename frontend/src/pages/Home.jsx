@@ -4,13 +4,27 @@ import {useGSAP} from '@gsap/react'
 import gsap from 'gsap'
 import 'remixicon/fonts/remixicon.css'
 import LocationSearchPannel from '../components/LocationSearchPannel'
+import VehiclePannel from '../components/VehiclePannel'
+import ConfirmRide from '../components/ConfirmRide'
+import WaitingForDriver from '../components/WaitingForDriver'
+import LookingForDriver from '../components/LookingForDriver'
 
 const Home = () => {
   const [pickup, setPickup] = useState('')
   const [destination, setDestination] = useState('')
   const [pannelOpen, setPannelOpen] = useState(false)
+  const vehiclePannelRef = useRef(null)
+  const confirmRideRef = useRef(null)
+  const vehicleFoundRef = useRef(null)
+  const waitingForDriverRef = useRef(null)
   const panelRef = useRef(null)
   const pannelCloseRef = useRef(null)
+  const [vehiclePannel, setVehiclePannel] = useState(false)
+  const [confirmRidePannel, setConfirmRidePannel] = useState(false)
+
+  const [vehicleFound, setVehicleFound] = useState(false)
+  const [waitingForDriver, setWaitingForDriver] = useState(false)
+
   const submitHandler=(e)=>{
     e.preventDefault()
   }
@@ -37,11 +51,58 @@ const Home = () => {
       })
     }
   },[pannelOpen])
+
+  useGSAP(function(){
+    if(vehiclePannel){
+      gsap.to(vehiclePannelRef.current,{
+      transform:'translateY(0)'
+    })
+    }else{
+      gsap.to(vehiclePannelRef.current,{
+      transform:'translateY(100%)'
+    })
+  }
+  },[vehiclePannel])
+  useGSAP(function(){
+    if(confirmRidePannel){
+      gsap.to(confirmRideRef.current,{
+      transform:'translateY(0)'
+    })
+    }else{
+      gsap.to(confirmRideRef.current,{
+      transform:'translateY(100%)'
+    })
+  }
+  },[confirmRidePannel])
+  useGSAP(function(){
+    if(vehicleFound){
+      gsap.to(vehicleFoundRef.current,{
+      transform:'translateY(0)'
+    })
+    }else{
+      gsap.to(vehicleFoundRef.current,{
+      transform:'translateY(100%)'
+    })
+  }
+  },[vehicleFound])
+  useGSAP(function(){
+    if(waitingForDriver){
+      gsap.to(waitingForDriverRef.current,{
+      transform:'translateY(0)'
+    })
+    }else{
+      gsap.to(waitingForDriverRef.current,{
+      transform:'translateY(100%)'
+    })
+  }
+  },[waitingForDriver])
   return (
     <div className='h-screen relative overflow-hidden'>
       <img className='w-20 absolute left-5 top-5' src="https://imgs.search.brave.com/wCminu2A6ZbB1QN22aV0P2w4YjoK0u6ZzS-JeyJ1hEs/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMjcv/MTI3LzQ1MS9zbWFs/bC91YmVyLWxvZ28t/dWJlci1pY29uLXRy/YW5zcGFyZW50LWZy/ZWUtcG5nLnBuZw" alt="" />
 
-      <div className='h-screen w-screen'>
+      <div onClick={()=>{
+        setVehiclePannel(false)
+      }} className='h-screen w-screen'>
         <img className='h-full w-full ' src="https://imgs.search.brave.com/VP8pU4e_Bdx9h1AUMbv9bVLbn2WjUzE6BseNuBdn1mA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS12ZWN0/b3IvdG9wLXZpZXct/Y2l0eS1tYXBfNzAz/NDctMTMxMC5qcGc_/c2VtdD1haXNfaHli/cmlkJnc9NzQwJnE9/ODA" alt="" />
       </div>
       <div className=' flex flex-col justify-end h-screen absolute top-0 w-full '>
@@ -82,40 +143,20 @@ const Home = () => {
         </form>
         </div>
         <div ref={panelRef} className=' bg-white p-5 h-0'>
-          <LocationSearchPannel/>
+          <LocationSearchPannel setPannelOpen = {setPannelOpen} setVehiclePannel={setVehiclePannel}/>
         </div>
       </div>
-      <div className=' w-full translate-y-full fixed z-10 bottom-0 bg-white px-3 py-8'>
-        <h3 className='text-2xl font-semibold mb-5'>Choose a Ride</h3>
-        <div className='w-full bg-gray-100 flex active:border-2 border-black rounded-xl items-center justify-between  p-3 mb-2'>
-          <img className='h-10' src="https://imgs.search.brave.com/rd8a_Sjk4Io-qjtxFxmx-FphzkQt8XeY6rH8fx61Oo8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvMjAxNi8w/Ny9DYXItUE5HLnBu/Zw" alt="" />
-          <div className='ml-2 w-1/2' >
-            <h4 className='font-medium text-base'>UberGo <span><i className="ri-user-fill"></i> 4 </span></h4>
-            <h5 className='font-normal text-xs text-gray-600'>2 mins away</h5>
-            <p className='font-normal text-xs text-gray-600'>Affordable, compact rides</p>
-          </div>
-          <h2 className='text-xl font-semibold'><i className="ri-money-rupee-circle-line"></i>193.20</h2>
-        </div>
-
-        <div className='w-full flex active:border-2 bg-gray-100 border-black rounded-xl items-center justify-between  p-3 mb-2'>
-          <img className='h-10' src="https://imgs.search.brave.com/1CY0USIoL_tWecHL3g2Qa1ekF00Cik2As-VVqSXMVGQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHNkLWdyYXR1aXRh/cy9tb3RvY2ljbGV0/YS1lbGV0cmljYS1h/bWFyZWxhLWVsZWdh/bnRlLXRyYW5zcG9y/dGUtZGUtZGVzaWdu/LW1vZGVybm9fNjMy/NDk4LTQ4NTUwLmpw/Zz9zZW10PWFpc19o/eWJyaWQ" alt="" />
-          <div className='-ml-1 w-1/2' >
-            <h4 className='font-medium text-base'>Moto <span><i className="ri-user-fill"></i> 1 </span></h4>
-            <h5 className='font-normal text-xs text-gray-600'>3 mins away</h5>
-            <p className='font-normal text-xs text-gray-600'>Affordable, motorcycle ride</p>
-          </div>
-          <h2 className='text-xl font-semibold'><i className="ri-money-rupee-circle-line"></i>65</h2>
-        </div>
-
-        <div className='w-full flex active:border-2 bg-gray-100 border-black rounded-xl items-center justify-between  p-3 mb-2'>
-          <img className='h-10' src="https://imgs.search.brave.com/67EOC9mRdwpFVukzNjLY-ZqwuxIPpauR933HXFkkhFU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wNy5o/aWNsaXBhcnQuY29t/L3ByZXZpZXcvNDA0/LzM3NC80NjcvYmFq/YWotYXV0by1jYXIt/YXV0by1yaWNrc2hh/dy1waWFnZ2lvLWFw/ZS1jYXItdGh1bWJu/YWlsLmpwZw" alt="" />
-          <div className='-ml-4 w-1/2' >
-            <h4 className='font-medium text-base'>UberAuto <span><i className="ri-user-fill"></i> 3 </span></h4>
-            <h5 className='font-normal text-xs text-gray-600'>3 mins away</h5>
-            <p className='font-normal text-xs text-gray-600'>Affordable, Auto ride</p>
-          </div>
-          <h2 className='text-xl font-semibold'><i className="ri-money-rupee-circle-line"></i>115</h2>
-        </div>
+      <div ref={vehiclePannelRef} className=' w-full translate-y-full fixed z-10 bottom-0 bg-white px-3 py-10 pt-12'>
+        <VehiclePannel setConfirmRidePannel={setConfirmRidePannel} setVehiclePannel={setVehiclePannel}/>
+      </div>
+      <div ref={confirmRideRef} className=' w-full translate-y-full fixed z-10 bottom-0 bg-white px-3 py-10 pt-12'>
+        <ConfirmRide setConfirmRidePannel={setConfirmRidePannel} setVehicleFound={setVehicleFound}/>
+      </div>
+      <div ref={vehicleFoundRef} className=' w-full translate-y-full fixed z-10 bottom-0 bg-white px-3 py-10 pt-12'>
+        <LookingForDriver setVehicleFound={setVehicleFound}/>
+      </div>
+      <div ref={waitingForDriverRef} className=' w-full  fixed z-10 bottom-0 bg-white px-3 py-10 pt-12'>
+        <WaitingForDriver waitingForDriver={waitingForDriver} s/>
       </div>
     </div>
   )
