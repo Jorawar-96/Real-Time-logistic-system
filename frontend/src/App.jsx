@@ -13,13 +13,17 @@ import CaptainProtextWrapper from './pages/CaptainProtextWrapper'
 import CaptainProfile from './pages/CaptainProfile'
 import CaptainLogout from './pages/CaptainLogout'
 import UserProfile from './pages/UserProfile'
+import Ridding from './pages/Ridding'
+import CaptainRidding from './pages/CaptainRidding'
 
 const App = () => {
   return (
     <div>
       <Routes>
         <Route path='/' element={<Start/>}/>
-        <Route path='/login' element={<UserLogin/>}/>        
+        <Route path='/login' element={<UserLogin/>}/>   
+        <Route path='/riding' element={<Ridding/>}/> 
+        <Route path='/captain-riding' element={<CaptainRidding/>}/> 
         <Route path='/captain-login' element={<CaptainLogin/>}/>        
         <Route path='/signup' element={<UserSignup/>}/>        
         <Route path='/captain-signup' element={<CaptainSignup/>}/>        
