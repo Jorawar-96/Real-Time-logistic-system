@@ -20,7 +20,7 @@ export const CaptainDataContext = createContext();
         updateCaptain
     };
     return (
-        <CaptainDataContext.Provider value={{ captain, isLoading, error,setCaptain, updateCaptain }}>
+        <CaptainDataContext.Provider value={value}>
             {children}
         </CaptainDataContext.Provider>
     );

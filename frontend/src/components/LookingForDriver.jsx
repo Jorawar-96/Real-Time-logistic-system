@@ -1,7 +1,6 @@
 import React from 'react'
 
 
-
 const LookingForDriver = (props) => {
   return (
     <div>
@@ -17,20 +16,20 @@ const LookingForDriver = (props) => {
                     <i className="ri-map-pin-user-fill"></i>
                     <div>
                         <h3 className=' text-lg font-bold'>562/11-A</h3>
-                        <p className='text-sm -mt-1 text-gray-700'>Kaikondrahill, Bengaluru, Karanataka</p>
+                        <p className='text-sm -mt-1 text-gray-700'>{props.pickup}</p>
                     </div>
                 </div>
                 <div className='flex gap-3 items-center p-3 border-b-2'>
                     <i className=" text-lg ri-map-pin-2-fill"></i>
                     <div>
                         <h3 className=' text-lg font-bold'>562/11-A</h3>
-                        <p className='text-sm -mt-1 text-gray-700'>Near cyber park, Bengaluru, Karanataka</p>
+                        <p className='text-sm -mt-1 text-gray-700'>{props.destination}</p>
                     </div>
                 </div>
                 <div className='flex gap-3 items-center p-3'>
                     <i className="ri-money-rupee-circle-line"></i>
                     <div>
-                        <h3 className=' text-lg font-bold'>193.20</h3>
+                        <h3 className=' text-lg font-bold'>{props.fare[props.vehicleType]}</h3>
                         <p className='text-sm -mt-1 text-gray-700'>Cash only</p>
                     </div>
                 </div>

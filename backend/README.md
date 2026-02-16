@@ -300,3 +300,55 @@ curl -X POST http://localhost:4000/captain/register \
 
 ---
 
+Backend API Documentation
+
+## `/rides/get-fare` Endpoint
+
+### Description
+
+Retrives the fare estimate for a ride between the provided pickup and destination addresses.
+
+### HTTP Method
+
+`GET`
+
+### Authentication
+
+Requires a valid JWT token in the Authentication header:
+`Authorization:
+
+ Bear
+
+er<token>`
+
+### Request Parameters
+
+-`pickup` (String,required) : The pickup address (minimum 3 characters).
+- `destination` (String,required) : The destination address (minimum 3 characters).
+
+### Example Request 
+
+```
+GET /rides/get-fare?pickup=Esi+hospital+jodhpur&destination=jeevan+jyoti+nursing+home+jodhpur
+```
+
+### Example Response
+
+```json
+{
+  "auto":50.0,
+  "car":75.0,
+  "motorcycle":40.0
+}
+```
+
+### Error Response
+
+-`400 Bad Request`: If any required parameter is missing or invalid.
+-`500 Internal Server Error` : If there is an error calculate the fare.
+
+```json
+{
+  "message":"Error message"
+}
+```

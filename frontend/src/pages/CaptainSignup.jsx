@@ -6,11 +6,14 @@ import { useNavigate } from 'react-router-dom'
 
 const CaptainSignup = () => {
   const navigate = useNavigate()
+
   const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [firstname, setFirstname] = useState('')
     const [lastname, setLastname] = useState('')
-    const [userData, setUserData] = useState({})
+
+    // const [userData, setUserData] = useState({})
+
     const [capacity, setCapacity] = useState('')
     const [color, setColor] = useState('')
     const [vehicleType, setVehicleType] = useState('')
