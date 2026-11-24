@@ -1,4 +1,4 @@
-Uber Clone - MERN Full Stack
+Real Time logistic System - MERN Full Stack
 A comprehensive real-time ride-sharing application built using the MERN stack. This project features a dual-interface system for Users and Captains, utilizing WebSockets for live interactions and a secure OTP-based handshake to start journeys.
 
 Project Overview
